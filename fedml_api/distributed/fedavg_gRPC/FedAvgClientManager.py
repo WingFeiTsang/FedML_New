@@ -9,8 +9,8 @@ try:
     from fedml_core.distributed.client.client_manager import ClientManager
     from fedml_core.distributed.communication.message import Message
 except ImportError:
-    from fedml.fedml_core.distributed.client.client_manager import ClientManager
-    from fedml.fedml_core.distributed.communication.message import Message
+    from fedml_backup.fedml_core.distributed.client.client_manager import ClientManager
+    from fedml_backup.fedml_core.distributed.communication.message import Message
 from .message_define import MyMessage
 from .utils import transform_list_to_tensor, post_complete_message_to_sweep_process, transform_tensor_to_list
 
