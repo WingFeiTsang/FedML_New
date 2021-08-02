@@ -44,8 +44,10 @@ from fedml_api.model.cv.mobilenet import mobilenet
 from fedml_api.model.cv.resnet import resnet56
 from fedml_api.model.nlp.rnn import RNN_OriginalFedAvg, RNN_StackOverFlow
 from fedml_api.model.linear.lr import LogisticRegression
+from fedml_api.model.linear.lr import LinearRegression
 from fedml_api.model.cv.mobilenet_v3 import MobileNetV3
 from fedml_api.model.cv.efficientnet import EfficientNet
+from fedml_api.model.cv.lenet import LeNet
 
 from fedml_api.distributed.fedavg_gRPC.FedAvgAPI import FedML_init, FedML_FedAvg_distributed
 
@@ -237,9 +239,15 @@ def load_data(args, dataset_name):
 def create_model(args, model_name, output_dim):
     logging.info("create_model. model_name = %s, output_dim = %s" % (model_name, output_dim))
     model = None
-    if model_name == "lr" and args.dataset == "mnist":
+    if model_name == "lor" and args.dataset == "mnist":
         logging.info("LogisticRegression + MNIST")
         model = LogisticRegression(28 * 28, output_dim)
+    elif model_name == "lir" and args.dataset == "mnist":
+        logging.info("LinearRegression + MNIST")
+        model = LinearRegression(28 * 28, output_dim)
+    elif model_name == "lenet" and args.dataset == "mnist":
+        logging.info("LeNet + MNIST")
+        model = LeNet()
     elif model_name == "rnn" and args.dataset == "shakespeare":
         logging.info("RNN + shakespeare")
         model = RNN_OriginalFedAvg()
@@ -247,7 +255,7 @@ def create_model(args, model_name, output_dim):
         logging.info("CNN + FederatedEMNIST")
         model = CNN_DropOut(False)
     elif model_name == "resnet18_gn" and args.dataset == "fed_cifar100":
-        logging.info("ResNet18_GN + Federated_CIFAR100")
+        logging.info("ResNet18 + Federated_CIFAR100")
         model = resnet18()
     elif model_name == "rnn" and args.dataset == "fed_shakespeare":
         logging.info("RNN + fed_shakespeare")

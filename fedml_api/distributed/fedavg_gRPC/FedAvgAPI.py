@@ -49,7 +49,7 @@ def FedML_FedAvg_distributed(process_id, worker_number, device, comm, model, tra
 def init_server(args, device, comm, rank, size, model, train_data_num, train_data_global, test_data_global,
                 train_data_local_dict, test_data_local_dict, train_data_local_num_dict, model_trainer, preprocessed_sampling_lists=None):
     if model_trainer is None:
-        if args.dataset == "stackoverflow_lr":
+        if args.dataset in ["stackoverflow_lr"]:
             model_trainer = MyModelTrainerTAG(model)
         elif args.dataset in ["fed_shakespeare", "stackoverflow_nwp"]:
             model_trainer = MyModelTrainerNWP(model)

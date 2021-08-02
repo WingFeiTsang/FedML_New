@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 
 import numpy as np
@@ -84,8 +85,8 @@ def load_partition_data_mnist_by_device_id(batch_size,
 
 
 def load_partition_data_mnist(batch_size,
-                              train_path="./../../../data/MNIST/train",
-                              test_path="./../../../data/MNIST/test"):
+                              train_path="./../data/MNIST/train",
+                              test_path="./../data/MNIST/test"):
     users, groups, train_data, test_data = read_data(train_path, test_path)
 
     if len(groups) == 0:
