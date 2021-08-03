@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from ..gRPC import grpc_comm_manager_pb2 as grpc__comm__manager__pb2
+import grpc_comm_manager_pb2 as grpc__comm__manager__pb2
 
 
 class gRPCCommManagerStub(object):
@@ -14,7 +14,7 @@ class gRPCCommManagerStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.sendMessage = channel.unary_unary(
+        self.sendMessage = channel.stream_unary(
                 '/gRPCCommManager/sendMessage',
                 request_serializer=grpc__comm__manager__pb2.CommRequest.SerializeToString,
                 response_deserializer=grpc__comm__manager__pb2.CommResponse.FromString,
@@ -24,7 +24,7 @@ class gRPCCommManagerStub(object):
 class gRPCCommManagerServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def sendMessage(self, request, context):
+    def sendMessage(self, request_iterator, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -33,7 +33,7 @@ class gRPCCommManagerServicer(object):
 
 def add_gRPCCommManagerServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'sendMessage': grpc.unary_unary_rpc_method_handler(
+            'sendMessage': grpc.stream_unary_rpc_method_handler(
                     servicer.sendMessage,
                     request_deserializer=grpc__comm__manager__pb2.CommRequest.FromString,
                     response_serializer=grpc__comm__manager__pb2.CommResponse.SerializeToString,
@@ -49,7 +49,7 @@ class gRPCCommManager(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def sendMessage(request,
+    def sendMessage(request_iterator,
             target,
             options=(),
             channel_credentials=None,
@@ -59,7 +59,7 @@ class gRPCCommManager(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/gRPCCommManager/sendMessage',
+        return grpc.experimental.stream_unary(request_iterator, target, '/gRPCCommManager/sendMessage',
             grpc__comm__manager__pb2.CommRequest.SerializeToString,
             grpc__comm__manager__pb2.CommResponse.FromString,
             options, channel_credentials,

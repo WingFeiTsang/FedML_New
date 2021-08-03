@@ -1,12 +1,13 @@
 syntax = "proto3";
 
 service gRPCCommManager {
-  rpc sendMessage (CommRequest) returns (CommResponse);
+  rpc sendMessage (stream CommRequest) returns (CommResponse);
 }
 
 message CommRequest {
   int32 server_id = 1;
   string message = 2;
+  string fragment_id = 3;
 }
 
 message CommResponse {
