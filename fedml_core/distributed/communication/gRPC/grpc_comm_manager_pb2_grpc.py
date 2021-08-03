@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import grpc_comm_manager_pb2 as grpc__comm__manager__pb2
+import fedml.fedml_core.distributed.communication.gRPC.grpc_comm_manager_pb2 as grpc__comm__manager__pb2
 
 
 class gRPCCommManagerStub(object):

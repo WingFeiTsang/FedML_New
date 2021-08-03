@@ -3,7 +3,7 @@ import queue
 import threading
 import logging
 
-from .message_define import MyMessage
+from fedml.fedml_api.distributed.fedavg_gRPC.message_define import MyMessage
 from fedml.fedml_core.distributed.communication.message import Message
 
 lock = threading.Lock()

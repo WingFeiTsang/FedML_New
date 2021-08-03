@@ -16,7 +16,7 @@ from fedml.fedml_core.distributed.communication.observer import Observer
 from fedml.fedml_core.distributed.communication.gRPC.grpc_server_and_client import gRPCCOMMServicer
 from fedml.fedml_api.distributed.fedavg.utils import transform_tensor_to_list
 from fedml.fedml_api.distributed.utils.ip_config_utils import build_ip_table
-from .message_define import MyMessage
+from fedml.fedml_api.distributed.fedavg_gRPC.message_define import MyMessage
 
 
 class GRPCCommManager(BaseCommunicationManager):
