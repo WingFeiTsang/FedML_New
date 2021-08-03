@@ -16,6 +16,7 @@ from fedml.fedml_core.distributed.communication.observer import Observer
 from fedml.fedml_core.distributed.communication.gRPC.grpc_server_and_client import gRPCCOMMServicer
 from fedml.fedml_api.distributed.fedavg.utils import transform_tensor_to_list
 from fedml.fedml_api.distributed.utils.ip_config_utils import build_ip_table
+from .message_define import MyMessage
 
 
 class GRPCCommManager(BaseCommunicationManager):
@@ -58,7 +59,6 @@ class GRPCCommManager(BaseCommunicationManager):
         )
 
         # starts a grpc_server on local machine using ip address $host
-        #self.grpc_server.add_insecure_port("{}:{}".format(self.host, self.port))
         self.grpc_server.add_insecure_port("{}:{}".format(self.host, self.port))
         self.grpc_server.start()
         logging.info("server started. Listening on port " + str(self.port))
@@ -78,8 +78,11 @@ class GRPCCommManager(BaseCommunicationManager):
         logging.info("client " + str(self.host) + " is started. Listening on port " + str(self.port))
 
     def send_message(self, msg: Message):
-        payload = msg.to_json()
+        # zrf revised this send_message() function to make it send more message in one flow.
         receiver_id = msg.get_receiver_id()
+        sender_id = msg.get_sender_id()
+        global_model_params = msg.get(MyMessage.MSG_ARG_KEY_MODEL_PARAMS)
+        client_index = msg.get(MyMessage.MSG_ARG_KEY_CLIENT_INDEX)
 
         # lookup ip of receiver from self.ip_config table
         receiver_ip = self.ip_config[str(receiver_id)]
@@ -89,14 +92,24 @@ class GRPCCommManager(BaseCommunicationManager):
         channel = grpc.insecure_channel(channel_url, options=self.opts)
         stub = grpc_comm_manager_pb2_grpc.gRPCCommManagerStub(channel)
 
-        request = grpc_comm_manager_pb2.CommRequest()
-        request.server_id = self.client_id
-        request.message = payload
+        def create_and_send_stream_message():
+            for k in global_model_params.keys():
+                message = Message(MyMessage.MSG_TYPE_S2C_INIT_CONFIG, sender_id, receive_id)
+                message.add_params(MyMessage.MSG_ARG_KEY_MODEL_PARAMS, global_model_params[k])
+                message.add_params(MyMessage.MSG_ARG_KEY_CLIENT_INDEX, str(client_index))
+                payload = message.to_json()
+
+                request = grpc_comm_manager_pb2.CommRequest()
+                request.server_id = self.client_id
+                request.message = payload
+                request.fragment_id = str(k)
+                yield request
+
         logging.info("Server sends msg to port " + str(50000 + receiver_id))
-        responose = stub.sendMessage(request)
-        logging.info(responose)
+        response = stub.sendMessage(create_and_send_stream_message())
+        logging.info(response)
         channel.close()
-        logging.info("Mesag is send!~~~~")
+        logging.info(" Message to client is send!~~~~")
 
     def add_observer(self, observer: Observer):
         self._observers.append(observer)
@@ -114,7 +127,7 @@ class GRPCCommManager(BaseCommunicationManager):
                 lock.acquire()
                 msg_params_string = self.grpc_service.message_q.get()
                 msg_params = Message()
-                msg_params.init_from_json_string(msg_params_string)
+                # msg_params.init_from_json_string(msg_params_string)
                 msg_type = msg_params.get_type()
                 for observer in self._observers:
                     observer.receive_message(msg_type, msg_params)
