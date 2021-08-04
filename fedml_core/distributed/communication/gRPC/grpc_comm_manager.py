@@ -142,6 +142,10 @@ class GRPCCommManager(BaseCommunicationManager):
                 msg_type = msg_params_string.get_type()
                 for observer in self._observers:
                     observer.receive_message(msg_type, msg_params_string)
+                    logging.info("put queue with senderid{} and localnumher{}".format(
+                        int(msg_params_string.get(MyMessage.MSG_ARG_KEY_SENDER)),
+                        int(msg_params_string.get(MyMessage.MSG_ARG_KEY_NUM_SAMPLES))
+                    ))
                 lock.release()
         return
 

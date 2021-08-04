@@ -47,7 +47,8 @@ class FedAVGServerManager(ServerManager):
         model_params = msg_params.get(MyMessage.MSG_ARG_KEY_MODEL_PARAMS)
         local_sample_number = msg_params.get(MyMessage.MSG_ARG_KEY_NUM_SAMPLES)
 
-        self.aggregator.add_local_trained_result(sender_id - 1, model_params, local_sample_number)
+        logging.info("sendere id is %d" % sender_id)
+        self.aggregator.add_local_trained_result(int(sender_id) - 1, model_params, int(local_sample_number))
         b_all_received = self.aggregator.check_whether_all_receive()
         logging.info("b_all_received = " + str(b_all_received))
         if b_all_received:

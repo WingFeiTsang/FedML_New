@@ -50,6 +50,7 @@ class FedAVGClientManager(ClientManager):
     def handle_message_receive_model_from_server(self, msg_params):
         logging.info("handle_message_receive_model_from_server.")
         model_params = msg_params.get(MyMessage.MSG_ARG_KEY_MODEL_PARAMS)
+        logging.info(model_params)
         client_index = msg_params.get(MyMessage.MSG_ARG_KEY_CLIENT_INDEX)
         model_params = transform_list_to_tensor(model_params)
         if self.args.is_mobile == 1:
