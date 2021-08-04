@@ -33,6 +33,7 @@ class FedAVGClientManager(ClientManager):
 
     def handle_message_init(self, msg_params):
         global_model_params = msg_params.get(MyMessage.MSG_ARG_KEY_MODEL_PARAMS)
+        logging.info(global_model_params)
         client_index = msg_params.get(MyMessage.MSG_ARG_KEY_CLIENT_INDEX)
         global_model_params = transform_list_to_tensor(global_model_params)
         if self.args.is_mobile == 1:

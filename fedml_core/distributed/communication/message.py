@@ -35,6 +35,12 @@ class Message(object):
         self.receiver_id = self.msg_params[Message.MSG_ARG_KEY_RECEIVER]
         # print("msg_params = " + str(self.msg_params))
 
+    def init_from_retreated_message(self, string_msg):
+        self.msg_params = string_msg
+        self.type = self.msg_params[Message.MSG_ARG_KEY_TYPE]
+        self.sender_id = self.msg_params[Message.MSG_ARG_KEY_SENDER]
+        self.receiver_id = self.msg_params[Message.MSG_ARG_KEY_RECEIVER]
+
     def get_sender_id(self):
         return self.sender_id
 

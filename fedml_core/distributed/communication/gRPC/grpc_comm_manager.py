@@ -82,7 +82,7 @@ class GRPCCommManager(BaseCommunicationManager):
         receiver_id = msg.get_receiver_id()
         sender_id = msg.get_sender_id()
         global_model_params = msg.get(MyMessage.MSG_ARG_KEY_MODEL_PARAMS)
-        client_index = msg.get(MyMessage.MSG_ARG_KEY_CLIENT_INDEX)
+        message_type = msg.get_type()
 
         # lookup ip of receiver from self.ip_config table
         receiver_ip = self.ip_config[str(receiver_id)]
@@ -94,9 +94,18 @@ class GRPCCommManager(BaseCommunicationManager):
 
         def create_and_send_stream_message():
             for k in global_model_params.keys():
-                message = Message(MyMessage.MSG_TYPE_S2C_INIT_CONFIG, sender_id, receive_id)
+                message = Message(message_type, sender_id, receiver_id)
                 message.add_params(MyMessage.MSG_ARG_KEY_MODEL_PARAMS, global_model_params[k])
-                message.add_params(MyMessage.MSG_ARG_KEY_CLIENT_INDEX, str(client_index))
+                if message_type == MyMessage.MSG_TYPE_S2C_INIT_CONFIG:
+                    client_index = msg.get(MyMessage.MSG_ARG_KEY_CLIENT_INDEX)
+                    message.add_params(MyMessage.MSG_ARG_KEY_CLIENT_INDEX, str(client_index))
+                elif message_type == MyMessage.MSG_TYPE_S2C_SYNC_MODEL_TO_CLIENT:
+                    client_index = msg.get(MyMessage.MSG_ARG_KEY_CLIENT_INDEX)
+                    message.add_params(MyMessage.MSG_ARG_KEY_CLIENT_INDEX, str(client_index))
+                elif message_type == MyMessage.MSG_TYPE_C2S_SEND_MODEL_TO_SERVER:
+                    local_sample_num = msg.get(MyMessage.MSG_ARG_KEY_NUM_SAMPLES)
+                    message.add_params(MyMessage.MSG_ARG_KEY_NUM_SAMPLES, local_sample_num)
+
                 payload = message.to_json()
 
                 request = grpc_comm_manager_pb2.CommRequest()
@@ -126,11 +135,13 @@ class GRPCCommManager(BaseCommunicationManager):
             if self.grpc_service.message_q.qsize() > 0:
                 lock.acquire()
                 msg_params_string = self.grpc_service.message_q.get()
-                msg_params = Message()
+                # logging.info("%%%%%" + msg_params_string)
+                # msg_params = Message()
                 # msg_params.init_from_json_string(msg_params_string)
-                msg_type = msg_params.get_type()
+                # msg_params.init_from_retreated_message(msg_params_string)
+                msg_type = msg_params_string.get_type()
                 for observer in self._observers:
-                    observer.receive_message(msg_type, msg_params)
+                    observer.receive_message(msg_type, msg_params_string)
                 lock.release()
         return
 

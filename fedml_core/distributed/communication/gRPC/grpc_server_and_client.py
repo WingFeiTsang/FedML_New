@@ -35,19 +35,20 @@ class gRPCCOMMServicer(grpc_comm_manager_pb2_grpc.gRPCCommManagerServicer):
 
         msg_params = Message()
         global_model_params = {}
-        for i, request in enumerate(request_iterator):
-            if i == 0:
-                logging.info("client_{} got msg from client_{} from ip address {}".format(
-                    self.client_id,
-                    request.server_id,
-                    context_ip
-                ))
+        for request in request_iterator:
+            logging.info("client_{} got msg from client_{} from ip address {} with fragment id {}".format(
+                self.client_id,
+                request.server_id,
+                context_ip,
+                request.fragment_id
+            ))
             k = request.fragment_id
             msg_params.init_from_json_string(request.message)
             payload = msg_params.get(MyMessage.MSG_ARG_KEY_MODEL_PARAMS)
             global_model_params[k] = payload
 
         msg_params.add(MyMessage.MSG_ARG_KEY_MODEL_PARAMS, global_model_params)
+        logging.info("OKOKOKOKOKOKOK")
 
         lock.acquire()
         self.message_q.put(msg_params)
