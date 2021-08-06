@@ -1,3 +1,7 @@
+cd ./fedml/fedml_performance_grpc
+source activate fedml
+nohup ./run_fedavg_performance_grpc.sh resnet18_gn fed_cifar100 "./../data/fed_cifar100" hetero 0.5 2 2 10 adam GRPC 0.1 0.01 10 2 1 2 2 grpc_ipconfig.csv 0 > ./runret 2>&1 &
+exit
 Welcome to Ubuntu 20.04.2 LTS (GNU/Linux 5.8.0-63-generic x86_64)
 
  * Documentation:  https://help.ubuntu.com
@@ -10,15 +14,11 @@ To see these additional updates run: apt list --upgradable
 
 Your Hardware Enablement Stack (HWE) is supported until April 2025.
 *** System restart required ***
-Last login: Thu Aug  5 19:52:41 2021 from 192.168.232.128
-cd ./fedml/fedml_performance_grpc
-source activate fedml
-nohup ./run_fedavg_performance_grpc.sh resnet18_gn fed_cifar100 "./../data/fed_cifar100" hetero 0.5 2 2 10 adam GRPC 0.1 0.01 10 2 1 2 2 grpc_ipconfig.csv 0 > ./runret 2>&1 &
-exit
+Last login: Thu Aug  5 20:33:51 2021 from 192.168.232.128
 ]0;zengrf@ubuntu: ~[01;32mzengrf@ubuntu[00m:[01;34m~[00m$ cd ./fedml/fedml_performance_grpc
 ]0;zengrf@ubuntu: ~/fedml/fedml_performance_grpc[01;32mzengrf@ubuntu[00m:[01;34m~/fedml/fedml_performance_grpc[00m$ source activate fedml
 (fedml) ]0;zengrf@ubuntu: ~/fedml/fedml_performance_grpc[01;32mzengrf@ubuntu[00m:[01;34m~/fedml/fedml_performance_grpc[00m$ nohup ./run_fedavg_performance_grpc.sh resnet18_gn fed_cifar100 "./../data/fed_cifar100" hetero 0.5 2 2 10 adam GRPC 0.1 0.01 10 2 1 2 2 grpc_ipconfig.csv 0 > ./runret 2>&1 &
-[1] 13340
+[1] 13707
 (fedml) ]0;zengrf@ubuntu: ~/fedml/fedml_performance_grpc[01;32mzengrf@ubuntu[00m:[01;34m~/fedml/fedml_performance_grpc[00m$ exit
 logout
 Connection to 192.168.232.130 closed.

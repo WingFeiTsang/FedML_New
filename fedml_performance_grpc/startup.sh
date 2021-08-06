@@ -18,7 +18,7 @@ nohup ./run_fedavg_performance_grpc.sh resnet18_gn fed_cifar100 "./../data/fed_c
 exit
 eeooff
 
-sleep 5s
+sleep 10s
 sh ./run_fedavg_performance_grpc.sh resnet18_gn fed_cifar100 "./../data/fed_cifar100" hetero 0.5 2 2 10 adam GRPC 0.1 0.01 10 2 1 2 2 grpc_ipconfig.csv 0
 
 
