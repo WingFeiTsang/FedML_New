@@ -65,7 +65,7 @@ class FedAVGAggregator(object):
             model_list.append((self.sample_num_dict[idx], self.model_dict[idx]))
             training_num += self.sample_num_dict[idx]
 
-        logging.info("len of self.model_dict[idx] = " + str(len(self.model_dict)))
+        #logging.info("len of self.model_dict[idx] = " + str(len(self.model_dict)))
 
         # logging.info("################aggregate: %d" % len(model_list))
         (num0, averaged_params) = model_list[0]
@@ -82,7 +82,7 @@ class FedAVGAggregator(object):
         self.set_global_model_params(averaged_params)
 
         end_time = time.time()
-        logging.info("aggregate time cost: %d" % (end_time - start_time))
+        logging.info("Aggregate time cost: %d" % (end_time - start_time))
         return averaged_params
 
     def client_sampling(self, round_idx, client_num_in_total, client_num_per_round):

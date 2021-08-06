@@ -4,6 +4,7 @@ import os
 import random
 import socket
 import sys
+import time
 import traceback
 import grpc
 
@@ -40,6 +41,7 @@ from fedml_api.data_preprocessing.cinic10.data_loader import load_partition_data
 
 from fedml_api.model.cv.cnn import CNN_DropOut
 from fedml_api.model.cv.resnet_gn import resnet18
+from fedml_api.model.cv.resnet_gn import resnet50
 from fedml_api.model.cv.mobilenet import mobilenet
 from fedml_api.model.cv.resnet import resnet56
 from fedml_api.model.nlp.rnn import RNN_OriginalFedAvg, RNN_StackOverFlow
@@ -257,6 +259,9 @@ def create_model(args, model_name, output_dim):
     elif model_name == "resnet18_gn" and args.dataset == "fed_cifar100":
         logging.info("ResNet18 + Federated_CIFAR100")
         model = resnet18()
+    elif model_name == "resnet50" and args.dataset == "fed_cifar100":
+        logging.info("ResNet50 + Federated_CIFAR100")
+        model = resnet50()
     elif model_name == "rnn" and args.dataset == "fed_shakespeare":
         logging.info("RNN + fed_shakespeare")
         model = RNN_OriginalFedAvg()
@@ -291,18 +296,16 @@ if __name__ == "__main__":
     # parse python script input parameters
     parser = argparse.ArgumentParser()
     args = add_args(parser)
-    logging.info(args)
+    # logging.info(args)
 
     # initialize distributed computing (MPI)
-    logging.info(args.grpc_ipconfig_path)
     comm, process_id, worker_number = FedML_init(args.grpc_ipconfig_path)
 
     # customize the process name
     str_process_name = "FedAvg (" + args.backend + "):" + str(process_id)
-    print(str_process_name)
     setproctitle.setproctitle(str_process_name)
 
-     # customize the log format
+    # customize the log format
     # logging.basicConfig(level=logging.INFO,
     logging.basicConfig(level=logging.DEBUG,
                         format=str(
@@ -310,17 +313,17 @@ if __name__ == "__main__":
                         datefmt='%a, %d %b %Y %H:%M:%S')
     hostname = socket.gethostname()
     ip = socket.gethostbyname("localhost")
-    #logging.info("#############process ID = " + str(process_id) +
+    # logging.info("#############process ID = " + str(process_id) +
     #             ", host name = " + hostname + "########" +
     #             ", process ID = " + str(os.getpid()) +
     #             ", process Name = " + str(psutil.Process(os.getpid())))
 
     # zrf revised add ip addr
-    logging.info("#############process ID = " + str(process_id) +
-                 ", host name = " + hostname + "########" +
-                 ", host ip = " + ip + "$$$$$$$$"
-                 ", process ID = " + str(os.getpid()) +
-                 ", process Name = " + str(psutil.Process(os.getpid())))
+    # logging.info("#############process ID = " + str(process_id) +
+    #                ", host name = " + hostname + "########" +
+    #                ", host ip = " + ip + "$$$$$$$$"
+    #                ", process ID = " + str(os.getpid()) +
+    #                ", process Name = " + str(psutil.Process(os.getpid())))
 
     # initialize the wandb machine learning experimental tracking platform (https://www.wandb.com/).
     if process_id == 0:
@@ -342,7 +345,7 @@ if __name__ == "__main__":
     torch.cuda.manual_seed_all(0)
 
     # Please check "GPU_MAPPING.md" to see how to define the topology
-    logging.info("process_id = %d, size = %d" % (process_id, worker_number))
+    # logging.info("process_id = %d, size = %d" % (process_id, worker_number))
     device = mapping_processes_to_gpu_device_from_yaml_file(process_id, worker_number, args.gpu_mapping_file, args.gpu_mapping_key)
 
     # load data
@@ -354,11 +357,11 @@ if __name__ == "__main__":
     # Note if the model is DNN (e.g., ResNet), the training will be very slow.
     # In this case, please use our FedML distributed version (./fedml_experiments/distributed_fedavg)
     model = create_model(args, model_name=args.model, output_dim=dataset[7])
-    logging.info(model)
+    # logging.info(model)
 
     # try:
     # start "federated averaging (FedAvg)"
-    print("Main Worker Number"+ str(worker_number))
+    logging.info("Program start at worker {}:{}".format(process_id, time.time()))
     FedML_FedAvg_distributed(process_id, worker_number, device, comm,
                              model, train_data_num, train_data_global, test_data_global,
                              train_data_local_num_dict, train_data_local_dict, test_data_local_dict, args)

@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+import time
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../../fedml")))
@@ -33,7 +34,7 @@ class FedAVGClientManager(ClientManager):
 
     def handle_message_init(self, msg_params):
         global_model_params = msg_params.get(MyMessage.MSG_ARG_KEY_MODEL_PARAMS)
-        logging.info(global_model_params)
+        # logging.info(global_model_params)
         client_index = msg_params.get(MyMessage.MSG_ARG_KEY_CLIENT_INDEX)
         global_model_params = transform_list_to_tensor(global_model_params)
         if self.args.is_mobile == 1:
@@ -48,7 +49,7 @@ class FedAVGClientManager(ClientManager):
         self.__train()
 
     def handle_message_receive_model_from_server(self, msg_params):
-        logging.info("handle_message_receive_model_from_server.")
+        # logging.info("handle_message_receive_model_from_server.")
         model_params = msg_params.get(MyMessage.MSG_ARG_KEY_MODEL_PARAMS)
         logging.info(model_params)
         client_index = msg_params.get(MyMessage.MSG_ARG_KEY_CLIENT_INDEX)
@@ -65,12 +66,16 @@ class FedAVGClientManager(ClientManager):
 
     def send_model_to_server(self, receive_id, weights, local_sample_num):
         message = Message(MyMessage.MSG_TYPE_C2S_SEND_MODEL_TO_SERVER, self.get_sender_id(), receive_id)
+        # logging.info("Client {} is sending back params".format(self.get_sender_id()))
         message.add_params(MyMessage.MSG_ARG_KEY_MODEL_PARAMS, weights)
         message.add_params(MyMessage.MSG_ARG_KEY_NUM_SAMPLES, local_sample_num)
         self.send_message(message)
 
     def __train(self):
-        logging.info("#######training########### round_id = %d" % self.round_idx)
+        train_start_time = time.time()
         weights, local_sample_num = self.trainer.train(self.round_idx)
+        train_end_time = time.time()
+        logging.info("Training Round_id_{} Time_{}".format(
+            self.round_idx, (train_end_time-train_start_time)))
         weights = transform_tensor_to_list(weights)
         self.send_model_to_server(0, weights, local_sample_num)

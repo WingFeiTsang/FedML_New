@@ -67,7 +67,6 @@ class Message(object):
 
     def to_json(self):
         json_string = json.dumps(self.msg_params)
-        print("json string size = " + str(sys.getsizeof(json_string)))
         return json_string
 
     def get_content(self):

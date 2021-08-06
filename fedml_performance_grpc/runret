@@ -1,78 +1,0 @@
-nohup: ignoring input
-3
-INFO:root:Namespace(backend='GRPC', batch_size=10, ci=0, client_num_in_total=2, client_num_per_round=2, client_optimizer='adam', comm_round=2, data_dir='./../data/FederatedEMNIST/datasets', dataset='femnist', epochs=10, frequency_of_the_test=1, gpu_mapping_file=None, gpu_mapping_key='mapping_default', gpu_num_per_server=2, gpu_server_num=2, grpc_ipconfig_path='grpc_ipconfig.csv', is_mobile=0, lr=0.1, model='cnn', partition_alpha=0.5, partition_method='hetero', wd=0.01)
-INFO:root:grpc_ipconfig.csv
-INFO:root:#############process ID = 0, host name = ubuntu########, host ip = 127.0.0.1$$$$$$$$, process ID = 21509, process Name = psutil.Process(pid=21509, name='FedAvg (GRPC):0', status='running', started='02:14:31')
-wandb: Currently logged in as: wingfeitsang (use `wandb login --relogin` to force relogin)
-FedAvg (GRPC):0
-wandb: wandb version 0.11.0 is available!  To upgrade, please run:
-wandb:  $ pip install wandb --upgrade
-wandb: Tracking run with wandb version 0.10.33
-wandb: Syncing run FedAVG(d)heteror2-e10-lr0.1
-wandb: ⭐️ View project at https://wandb.ai/wingfeitsang/fedml
-wandb: 🚀 View run at https://wandb.ai/wingfeitsang/fedml/runs/3vpiug7c
-wandb: Run data is saved locally in /home/zengrf/fedml/fedml_performance_grpc/wandb/run-20210719_021433-3vpiug7c
-wandb: Run `wandb offline` to turn off syncing.
-INFO:root:process_id = 0, size = 2
-INFO:root: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-INFO:root: ################## You do not indicate gpu_util_file, will use CPU training  #################
-INFO:root:cpu
-INFO:root:!!!!!!!!!!!!!!!!!!!!!!!XXXXXXXXXXXX!
-INFO:root:load_data. dataset_name = femnist
-INFO:root:class_num = 21
-INFO:root:create_model. model_name = cnn, output_dim = 21
-INFO:root:CNN + FederatedEMNIST
-INFO:root:CNN_DropOut(
-  (conv2d_1): Conv2d(1, 32, kernel_size=(3, 3), stride=(1, 1))
-  (max_pooling): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
-  (conv2d_2): Conv2d(32, 64, kernel_size=(3, 3), stride=(1, 1))
-  (dropout_1): Dropout(p=0.25, inplace=False)
-  (flatten): Flatten(start_dim=1, end_dim=-1)
-  (linear_1): Linear(in_features=9216, out_features=128, bias=True)
-  (dropout_2): Dropout(p=0.5, inplace=False)
-  (linear_2): Linear(in_features=128, out_features=62, bias=True)
-  (relu): ReLU()
-)
-INFO:root:server started. Listening on port 50000
-INFO:root:Communication is started with port 50000
-INFO:root:client_indexes = [11 20]
-INFO:root:Server sends msg to port 50001
-
-Main Worker Number2
-@@@@@FedAVGSERVER_INIT: 2
-Prepare for call COMM: 2
-!!!!!!!!!!!!!!!!!!!1
-json string size = 27438394
-Traceback (most recent call last):
-  File "./main_fedavg_performance_grpc.py", line 356, in <module>
-    train_data_local_num_dict, train_data_local_dict, test_data_local_dict, args)
-  File "/home/zengrf/fedml/fedml_api/distributed/fedavg_gRPC/FedAvgAPI.py", line 43, in FedML_FedAvg_distributed
-    model_trainer, preprocessed_sampling_lists)
-  File "/home/zengrf/fedml/fedml_api/distributed/fedavg_gRPC/FedAvgAPI.py", line 74, in init_server
-    server_manager.send_init_msg()
-  File "/home/zengrf/fedml/fedml_api/distributed/fedavg_gRPC/FedAvgServerManager.py", line 42, in send_init_msg
-    self.send_message_init_config(process_id, global_model_params, client_indexes[process_id - 1])
-  File "/home/zengrf/fedml/fedml_api/distributed/fedavg_gRPC/FedAvgServerManager.py", line 90, in send_message_init_config
-    self.send_message(message)
-  File "/home/zengrf/fedml/fedml_core/distributed/server/server_manager.py", line 53, in send_message
-    self.com_manager.send_message(message)
-  File "/home/zengrf/fedml/fedml_core/distributed/communication/gRPC/grpc_comm_manager.py", line 94, in send_message
-    stub.sendMessage(request)
-  File "/home/zengrf/miniconda3/envs/fedml/lib/python3.7/site-packages/grpc/_channel.py", line 946, in __call__
-    return _end_unary_response_blocking(state, call, False, None)
-  File "/home/zengrf/miniconda3/envs/fedml/lib/python3.7/site-packages/grpc/_channel.py", line 849, in _end_unary_response_blocking
-    raise _InactiveRpcError(state)
-grpc._channel._InactiveRpcError: <_InactiveRpcError of RPC that terminated with:
-	status = StatusCode.UNAVAILABLE
-	details = "failed to connect to all addresses"
-	debug_error_string = "{"created":"@1626686076.709066619","description":"Failed to pick subchannel","file":"src/core/ext/filters/client_channel/client_channel.cc","file_line":3008,"referenced_errors":[{"created":"@1626686076.709064646","description":"failed to connect to all addresses","file":"src/core/ext/filters/client_channel/lb_policy/pick_first/pick_first.cc","file_line":397,"grpc_status":14}]}"
->
-wandb: Waiting for W&B process to finish, PID 21518
-wandb: Program failed with code 1.  Press ctrl-c to abort syncing.
-wandb: - 0.00MB of 0.00MB uploaded (0.00MB deduped)wandb: \ 0.00MB of 0.00MB uploaded (0.00MB deduped)wandb: | 0.00MB of 0.01MB uploaded (0.00MB deduped)wandb: / 0.00MB of 0.01MB uploaded (0.00MB deduped)wandb: - 0.00MB of 0.01MB uploaded (0.00MB deduped)wandb: \ 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: | 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: / 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: - 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: \ 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: | 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: / 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: - 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: \ 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: | 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: / 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: - 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: \ 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: | 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: / 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: - 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: \ 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: | 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: / 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: - 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: \ 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: | 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: / 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: - 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: \ 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: | 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: / 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: - 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: \ 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: | 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: / 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: - 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: \ 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: | 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: / 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: - 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: \ 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: | 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: / 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: - 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb: \ 0.01MB of 0.01MB uploaded (0.00MB deduped)wandb:                                                                                
-wandb: Find user logs for this run at: /home/zengrf/fedml/fedml_performance_grpc/wandb/run-20210719_021433-3vpiug7c/logs/debug.log
-wandb: Find internal logs for this run at: /home/zengrf/fedml/fedml_performance_grpc/wandb/run-20210719_021433-3vpiug7c/logs/debug-internal.log
-wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
-wandb: 
-wandb: Synced FedAVG(d)heteror2-e10-lr0.1: https://wandb.ai/wingfeitsang/fedml/runs/3vpiug7c
-

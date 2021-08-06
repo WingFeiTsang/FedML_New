@@ -4,6 +4,9 @@ from typing import List
 from concurrent import futures
 import threading
 
+import sys
+import time
+import json
 import grpc
 import time,os
 from ..gRPC import grpc_comm_manager_pb2_grpc, grpc_comm_manager_pb2
@@ -33,8 +36,39 @@ class GRPCCommManager(BaseCommunicationManager):
         self.grpc_service = None
         self.ip_config = None
 
-        self.opts = [('grpc.max_send_message_length', 100 * 1024 * 1024),
-                     ('grpc.max_receive_message_length', 100 * 1024 * 1024), ('grpc.enable_http_proxy', 0)]
+        self.service_default_config = {
+            "retryPolicy": {
+                "maxAttempts": 5,
+                "initialBackoff": "0.15s",
+                "maxBackoff": "1s",
+                "backoffMultiplier": 2,
+                "retryableStatusCodes": ["UNAVAILABLE"]
+            }
+        }
+        self.service_default_config = json.dumps(self.service_default_config)
+        self.opts = [('grpc.max_send_message_length', 1024 * 1024 * 1024),
+                     ('grpc.max_receive_message_length', 1024 * 1024 * 1024),
+                     ('grpc.enable_http_proxy', 0)]
+                     #('grpc.keepalive_time_ms', 5000),
+                     # send keepalive ping every 500 second, default is 2 hours
+                     #('grpc.keepalive_timeout_ms', 50000),
+                     # keepalive ping time out after 50 seconds, default is 20 seconds
+                     #('grpc.keepalive_permit_without_calls', True),
+                     # allow keepalive pings when there's no gPRC calls
+                     #('grpc.http2.max_pings_without_data', 0),
+                     # allow unlimited amount of keepalive pings without data
+                     #('grpc.http2.min_time_between_pings_ms', 1000),
+                     # allow grpc pings from client every 10 seconds
+                     #('grpc.http2.min_ping_interval_without_data_ms', 5000)
+                     # allow grpc ping from client without data every 5 seconds
+                     #]
+
+        self.client_args = [('grpc.max_send_message_length', 1024 * 1024 * 1024),
+                     ('grpc.max_receive_message_length', 1024 * 1024 * 1024),
+                     ('grpc.enable_http_proxy', 0)]
+                     # ('grpc.enable_retries', 1)]
+                     # ('grpc.peer_rpc_retry_buffer_size', 102400)
+                     # ('grpc.service_config', '{"retryPolicy": {"maxAttempts": 4, "initialBackoff": "0.15s", "maxBackoff": "1s", "backoffMultiplier": 2, "retryableStatusCodes": ["UNAVAILABLE"]}}')]
 
         if client_id == 0:
             self.node_type = "server"
@@ -45,13 +79,15 @@ class GRPCCommManager(BaseCommunicationManager):
 
         self.ip_config = build_ip_table(ip_config_path)
         self.is_running = True
-        logging.info("Communication is started with port " + str(port))
+        # logging.info("Communication is started with port " + str(port))
 
     def init_server_communication(self):
         # collecting local parameters from clients
         # staring collecting services at the server
-        self.grpc_server = grpc.server(futures.ThreadPoolExecutor(max_workers=self.client_num), options=self.opts)
-        logging.info(self.host +":" +self.port)
+        self.grpc_server = grpc.server(futures.ThreadPoolExecutor(max_workers=self.client_num*100),
+                                       maximum_concurrent_rpcs=1000,
+                                       options=self.opts)
+        # logging.info(self.host +":" +self.port)
         self.grpc_service = gRPCCOMMServicer(self.host, self.port, self.client_num, self.client_id)
         grpc_comm_manager_pb2_grpc.add_gRPCCommManagerServicer_to_server(
             self.grpc_service,
@@ -61,11 +97,13 @@ class GRPCCommManager(BaseCommunicationManager):
         # starts a grpc_server on local machine using ip address $host
         self.grpc_server.add_insecure_port("{}:{}".format(self.host, self.port))
         self.grpc_server.start()
-        logging.info("server started. Listening on port " + str(self.port))
+        # logging.info("server started. Listening on port " + str(self.port))
 
     def init_client_communication(self):
         # downloading global parameters from server
-        self.grpc_server = grpc.server(futures.ThreadPoolExecutor(max_workers=1), options=self.opts)
+        self.grpc_server = grpc.server(futures.ThreadPoolExecutor(max_workers=1),
+                                       maximum_concurrent_rpcs=1000,
+                                       options=self.opts)
         self.grpc_service = gRPCCOMMServicer(self.host, self.port, self.client_num, self.client_id)
         grpc_comm_manager_pb2_grpc.add_gRPCCommManagerServicer_to_server(
             self.grpc_service,
@@ -75,12 +113,12 @@ class GRPCCommManager(BaseCommunicationManager):
         # starts a grpc_server on local machine using ip address $host
         self.grpc_server.add_insecure_port("{}:{}".format(self.host, self.port))
         self.grpc_server.start()
-        logging.info("client " + str(self.host) + " is started. Listening on port " + str(self.port))
+        # logging.info("client " + str(self.host) + " is started. Listening on port " + str(self.port))
 
     def send_message(self, msg: Message):
         # zrf revised this send_message() function to make it send more message in one flow.
-        receiver_id = msg.get_receiver_id()
-        sender_id = msg.get_sender_id()
+        receiver_id = msg.get(Message.MSG_ARG_KEY_RECEIVER)
+        sender_id = msg.get(Message.MSG_ARG_KEY_SENDER)
         global_model_params = msg.get(MyMessage.MSG_ARG_KEY_MODEL_PARAMS)
         message_type = msg.get_type()
 
@@ -88,8 +126,8 @@ class GRPCCommManager(BaseCommunicationManager):
         receiver_ip = self.ip_config[str(receiver_id)]
         channel_url = '{}:{}'.format(receiver_ip, str(50000 + receiver_id))
 
-        logging.info(channel_url)
-        channel = grpc.insecure_channel(channel_url, options=self.opts)
+        # logging.info(channel_url)
+        channel = grpc.insecure_channel(channel_url, options=self.client_args)
         stub = grpc_comm_manager_pb2_grpc.gRPCCommManagerStub(channel)
 
         def create_and_send_stream_message():
@@ -112,13 +150,17 @@ class GRPCCommManager(BaseCommunicationManager):
                 request.server_id = self.client_id
                 request.message = payload
                 request.fragment_id = str(k)
+                logging.info("Send Message to Client_{} Fragment_{} Size_{} Time_{}".format(
+                    receiver_id,
+                    k,
+                    sys.getsizeof(request),
+                    time.time()
+                ))
                 yield request
 
-        logging.info("Server sends msg to port " + str(50000 + receiver_id))
         response = stub.sendMessage(create_and_send_stream_message())
-        logging.info(response)
         channel.close()
-        logging.info(" Message to client is send!~~~~")
+        logging.info("Finish Messaging to Client_{} Time_{}".format(receiver_id, time.time()))
 
     def add_observer(self, observer: Observer):
         self._observers.append(observer)
@@ -135,17 +177,15 @@ class GRPCCommManager(BaseCommunicationManager):
             if self.grpc_service.message_q.qsize() > 0:
                 lock.acquire()
                 msg_params_string = self.grpc_service.message_q.get()
-                # logging.info("%%%%%" + msg_params_string)
                 # msg_params = Message()
                 # msg_params.init_from_json_string(msg_params_string)
                 # msg_params.init_from_retreated_message(msg_params_string)
                 msg_type = msg_params_string.get_type()
                 for observer in self._observers:
                     observer.receive_message(msg_type, msg_params_string)
-                    logging.info("put queue with senderid{} and localnumher{}".format(
+                    logging.info("Handling and Training: Client_{} Time_{}".format(
                         int(msg_params_string.get(MyMessage.MSG_ARG_KEY_SENDER)),
-                        int(msg_params_string.get(MyMessage.MSG_ARG_KEY_NUM_SAMPLES))
-                    ))
+                        time.time()))
                 lock.release()
         return
 

@@ -1,6 +1,7 @@
 import logging
 import os, signal
 import sys
+import time
 
 from .message_define import MyMessage
 from .utils import transform_tensor_to_list, post_complete_message_to_sweep_process, transform_list_to_tensor
@@ -17,7 +18,6 @@ except ImportError:
 
 class FedAVGServerManager(ServerManager):
     def __init__(self, args, aggregator, comm=None, rank=0, size=0, backend="MPI", is_preprocessed=False, preprocessed_client_lists=None):
-        print("@@@@@FedAVGSERVER_INIT: " + str(size))
         super().__init__(args, comm, rank, size, backend)
         self.args = args
         self.aggregator = aggregator
@@ -33,7 +33,6 @@ class FedAVGServerManager(ServerManager):
         # sampling clients
         client_indexes = self.aggregator.client_sampling(self.round_idx, self.args.client_num_in_total,
                                                          self.args.client_num_per_round)
-        logging.info("INIT CLIENT INDEX" + str(client_indexes))
         global_model_params = self.aggregator.get_global_model_params()
         global_model_params = transform_tensor_to_list(global_model_params)
         # newly added by zrf for error "object of type Tensor is Jason serializable"
@@ -53,14 +52,15 @@ class FedAVGServerManager(ServerManager):
         # new added by zrf
         local_sample_number = msg_params.get(MyMessage.MSG_ARG_KEY_NUM_SAMPLES)
 
-        logging.info("add to local model with sender id ={} and local numer {}".format(sender_id, local_sample_number))
-
         self.aggregator.add_local_trained_result(int(sender_id) - 1, model_params, int(local_sample_number))
         b_all_received = self.aggregator.check_whether_all_receive()
-        logging.info("b_all_received = " + str(b_all_received))
+        # logging.info("b_all_received = " + str(b_all_received))
         if b_all_received:
             global_model_params = self.aggregator.aggregate()
+            test_time_start = time.time()
             self.aggregator.test_on_server_for_all_clients(self.round_idx)
+            test_time_end = time.time()
+            logging.info("Test on Sever for All Clients: %f" % (test_time_end - test_time_start))
 
             # start the next round
             self.round_idx += 1
@@ -79,8 +79,8 @@ class FedAVGServerManager(ServerManager):
                 client_indexes = self.aggregator.client_sampling(self.round_idx, self.args.client_num_in_total,
                                                                  self.args.client_num_per_round)
             
-            print('indexes of clients: ' + str(client_indexes))
-            print("size = %d" % self.size)
+            # print('indexes of clients: ' + str(client_indexes))
+            # print("size = %d" % self.size)
             if self.args.is_mobile == 1:
                 global_model_params = transform_tensor_to_list(global_model_params)
 
@@ -97,7 +97,6 @@ class FedAVGServerManager(ServerManager):
         self.send_message(message)
 
     def send_message_sync_model_to_client(self, receive_id, global_model_params, client_index):
-        logging.info("send_message_sync_model_to_client. receive_id = %d" % receive_id)
         message = Message(MyMessage.MSG_TYPE_S2C_SYNC_MODEL_TO_CLIENT, self.get_sender_id(), receive_id)
         message.add_params(MyMessage.MSG_ARG_KEY_MODEL_PARAMS, global_model_params)
         message.add_params(MyMessage.MSG_ARG_KEY_CLIENT_INDEX, str(client_index))
