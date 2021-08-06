@@ -361,7 +361,7 @@ if __name__ == "__main__":
 
     # try:
     # start "federated averaging (FedAvg)"
-    logging.info("Program start at worker {}:{}".format(process_id, time.time()))
+    logging.info("Program start at Worker_{} Time_{}".format(process_id, time.time()))
     FedML_FedAvg_distributed(process_id, worker_number, device, comm,
                              model, train_data_num, train_data_global, test_data_global,
                              train_data_local_num_dict, train_data_local_dict, test_data_local_dict, args)
